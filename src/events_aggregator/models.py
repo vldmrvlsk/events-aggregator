@@ -1,7 +1,7 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, text
+from sqlalchemy import DateTime, ForeignKey, Integer, String, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -53,4 +53,44 @@ class SyncMetadata(Base):
         String(32),
         default="never",
         server_default=text("'never'"),
+    )
+
+class Ticket(Base):
+    __tablename__ = "tickets"
+
+    ticket_id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+    )
+    event_id: Mapped[str] = mapped_column(
+    String(36),
+    ForeignKey("events.id", ondelete="RESTRICT"),
+    nullable=False,
+    )
+    first_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+    last_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+    email: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+    seat: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+    status: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default="active",
+        server_default=text("'active'"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("now()"),
     )
