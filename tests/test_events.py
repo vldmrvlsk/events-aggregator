@@ -148,6 +148,28 @@ def test_create_ticket_success(client, monkeypatch):
     seats_cache.pop("test-event-001", None)
 
 
+
+def test_create_ticket_returns_400_for_invalid_email(client, monkeypatch):
+    from events_aggregator.main import provider_client
+
+    register_mock = AsyncMock()
+    monkeypatch.setattr(provider_client, "register", register_mock)
+
+    response = client.post(
+        "/api/tickets",
+        json={
+            "event_id": "test-event-001",
+            "first_name": "Ivan",
+            "last_name": "Petrov",
+            "email": "invalid-email",
+            "seat": "A1",
+        },
+    )
+
+    assert response.status_code == 400
+    register_mock.assert_not_awaited()
+
+
 def test_create_ticket_returns_404_for_missing_event(client, monkeypatch):
     from events_aggregator.main import provider_client
 
