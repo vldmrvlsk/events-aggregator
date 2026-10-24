@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from events_aggregator.models import Event
 
 
-class EventsPaginator:
+class DatabasePaginator:
     """Filter, sort, and paginate events stored in the database."""
 
     def __init__(self, session: AsyncSession) -> None:

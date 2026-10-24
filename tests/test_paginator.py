@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from events_aggregator.models import Event
-from events_aggregator.paginator import EventsPaginator
+from events_aggregator.paginator import DatabasePaginator
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ async def test_paginate_returns_count_and_results(event):
     scalars_result.all.return_value = [event]
     session.scalars = AsyncMock(return_value=scalars_result)
 
-    paginator = EventsPaginator(session)
+    paginator = DatabasePaginator(session)
 
     result = await paginator.paginate(page=1, page_size=2)
 
@@ -54,7 +54,7 @@ async def test_paginate_applies_date_filter(event):
     scalars_result.all.return_value = [event]
     session.scalars = AsyncMock(return_value=scalars_result)
 
-    paginator = EventsPaginator(session)
+    paginator = DatabasePaginator(session)
 
     result = await paginator.paginate(
         date_from=date(2026, 12, 1),
@@ -78,7 +78,7 @@ async def test_paginate_calculates_previous_and_next_pages(event):
     scalars_result.all.return_value = [event]
     session.scalars = AsyncMock(return_value=scalars_result)
 
-    paginator = EventsPaginator(session)
+    paginator = DatabasePaginator(session)
 
     result = await paginator.paginate(page=2, page_size=2)
 
@@ -95,7 +95,7 @@ async def test_paginate_last_page_has_no_next_page(event):
     scalars_result.all.return_value = [event]
     session.scalars = AsyncMock(return_value=scalars_result)
 
-    paginator = EventsPaginator(session)
+    paginator = DatabasePaginator(session)
 
     result = await paginator.paginate(page=3, page_size=2)
 
@@ -112,7 +112,7 @@ async def test_paginate_empty_result(event):
     scalars_result.all.return_value = []
     session.scalars = AsyncMock(return_value=scalars_result)
 
-    paginator = EventsPaginator(session)
+    paginator = DatabasePaginator(session)
 
     result = await paginator.paginate(page=1, page_size=20)
 

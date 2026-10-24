@@ -1,9 +1,19 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, text
+from sqlalchemy import (
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+from events_aggregator.statuses import SyncStatus, TicketStatus
 
 
 class Base(DeclarativeBase):
@@ -49,23 +59,34 @@ class SyncMetadata(Base):
     last_changed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True)
     )
-    sync_status: Mapped[str] = mapped_column(
-        String(32),
-        default="never",
+    sync_status: Mapped[SyncStatus] = mapped_column(
+        Enum(
+            SyncStatus,
+            name="sync_status_enum",
+            native_enum=False,
+            values_callable=lambda enum_cls: [
+                item.value for item in enum_cls
+            ],
+            length=32,
+        ),
+        default=SyncStatus.NEVER,
         server_default=text("'never'"),
     )
 
+
 class Ticket(Base):
     __tablename__ = "tickets"
-
+    __table_args__ = (
+        Index("ix_tickets_event_id", "event_id"),
+    )
     ticket_id: Mapped[str] = mapped_column(
         String(36),
         primary_key=True,
     )
     event_id: Mapped[str] = mapped_column(
-    String(36),
-    ForeignKey("events.id", ondelete="RESTRICT"),
-    nullable=False,
+        String(36),
+        ForeignKey("events.id", ondelete="RESTRICT"),
+        nullable=False,
     )
     first_name: Mapped[str] = mapped_column(
         String(100),
@@ -83,10 +104,18 @@ class Ticket(Base):
         String(50),
         nullable=False,
     )
-    status: Mapped[str] = mapped_column(
-        String(20),
+    status: Mapped[TicketStatus] = mapped_column(
+        Enum(
+            TicketStatus,
+            name="ticket_status_enum",
+            native_enum=False,
+            values_callable=lambda enum_cls: [
+                item.value for item in enum_cls
+            ],
+            length=20,
+        ),
         nullable=False,
-        default="active",
+        default=TicketStatus.ACTIVE,
         server_default=text("'active'"),
     )
     created_at: Mapped[datetime] = mapped_column(

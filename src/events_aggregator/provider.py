@@ -1,4 +1,5 @@
 from typing import Any
+from urllib.parse import quote, urljoin
 
 import httpx
 
@@ -28,7 +29,7 @@ class EventsProviderClient:
         changed_at: str | None = None,
         cursor: str | None = None,
     ) -> dict[str, Any]:
-        url = cursor or f"{self.base_url}/api/events/"
+        url = cursor or urljoin(f"{self.base_url}/", "api/events/")
         params = {"changed_at": changed_at} if changed_at else None
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -50,7 +51,7 @@ class EventsProviderClient:
 
 
     async def seats(self, event_id: str) -> list[str]:
-        url = f"{self.base_url}/api/events/{event_id}/seats/"
+        url = urljoin(f"{self.base_url}/", f"api/events/{quote(event_id, safe='')}/seats/")
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             response = await client.get(url, headers=self._headers())
@@ -73,7 +74,7 @@ class EventsProviderClient:
         email: str,
         seat: str,
     ) -> str:
-        url = f"{self.base_url}/api/events/{event_id}/register/"
+        url = urljoin(f"{self.base_url}/", f"api/events/{quote(event_id, safe='')}/register/")
         payload = {
             "first_name": first_name,
             "last_name": last_name,
@@ -97,7 +98,7 @@ class EventsProviderClient:
         return ticket_id
 
     async def unregister(self, event_id: str, ticket_id: str) -> bool:
-        url = f"{self.base_url}/api/events/{event_id}/unregister/"
+        url = urljoin(f"{self.base_url}/", f"api/events/{quote(event_id, safe='')}/unregister/")
         payload = {"ticket_id": ticket_id}
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
